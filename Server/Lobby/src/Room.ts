@@ -44,7 +44,7 @@ export class Room {
     }
 
     // 생성시 마스터 플레이어 정보 셋팅
-    Initialize( userInfo:UserInfo ) {
+    Initialize( userInfo:UserInfo ) : void {
       const kPlayer = new RoomPlayer(true, true);
 
       kPlayer.userInfo = userInfo;
@@ -75,8 +75,8 @@ export class Room {
     
     // Player 찾기
     FindPlayer( userId : string) : RoomPlayer | undefined {
-      const kPlayer = this.players.find( (element) => {
-         return (element.Name() == userId); 
+      const kPlayer = this.players.find( (e) => {
+         return (e.Name() == userId); 
       });
       return kPlayer;
     }

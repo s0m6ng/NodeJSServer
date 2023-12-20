@@ -2,8 +2,6 @@
 // 채팅방 구현예제
 // https://velog.io/@uoayop/Node.js-Socket.io-%EC%B1%84%ED%8C%85%EB%B0%A9-%EA%B5%AC%ED%98%84%ED%95%B4%EB%B3%B4%EA%B8%B0-1
 
-
-
 import express from 'express';
 import http from 'http';
 import { Server, Socket } from 'socket.io';
@@ -73,7 +71,7 @@ io.on('connection', async (socket:Socket) => {
     });
     
     // 유저정보 받아서 다른유저에게 브로드캐스팅하기 ----
-    socket.on('req_user_info', (data) => {
+    socket.on('req_user_info', (data:string) => {
       mLobby.Ack_LobyUserInfo(socket, data);  
     });
 
@@ -103,26 +101,26 @@ io.on('connection', async (socket:Socket) => {
       mLobby.Ack_CreateRoom( socket, roomName, userId );
     });
 
-    socket.on('req_join_room', (roomName, userId) =>{
+    socket.on('req_join_room', (roomName:string, userId:string) =>{
       mLobby.Ack_JoinRoom( socket, roomName, userId );
     });
 
     // 룰 나가기 응답 -------------------------
-    socket.on('req_leave_room', (roomName, userId) =>{
+    socket.on('req_leave_room', (roomName:string, userId:string) =>{
       mLobby.Ack_LeaveRoom(socket, roomName, userId);
     });
 
-    socket.on('req_room_ready', (roomName, userId, userState) => {
+    socket.on('req_room_ready', (roomName:string, userId:string, userState:number) => {
       mLobby.Ack_RoomUserReady(socket, roomName, userId, userState);
     });
 
     // 방장이 Game start 눌렀을때 응답 ----------
-    socket.on('req_game_start', (roomName, userId) =>{
+    socket.on('req_game_start', (roomName:string, userId:string) =>{
       mLobby.Ack_GameStart(socket, roomName, userId);
     });
 
     // Game 종료 응답 (방의 모든 유저가 죽었을 때 ) ----------
-    socket.on('req_game_end', (roomName, userId) =>{
+    socket.on('req_game_end', (roomName:string, userId:string) =>{
       mLobby.Ack_GameEnd(socket, roomName, userId);
     });
 
