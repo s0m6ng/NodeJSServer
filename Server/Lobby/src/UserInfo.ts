@@ -13,6 +13,14 @@ class UserInfo {
       this.dataPort = dataPort;
       this.movePort = movePort;
     }
+
+    SetInfo( info : UserInfo) : void {
+      this.id = info.id;
+      this.socketId = info.socketId;
+      this.ip = info.ip;
+      this.dataPort = info.dataPort;
+      this.movePort = info.movePort;
+    }
   }
 
   export default UserInfo;

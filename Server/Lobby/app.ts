@@ -114,6 +114,9 @@ io.on('connection', async (socket:Socket) => {
       mLobby.Ack_RoomUserReady(socket, roomName, userId, userState);
     });
 
+    socket.on('req_room_chat', (roomName:string, userId:string, msg:string)=> {
+      mLobby.Ack_RoomChat(socket, roomName, userId, msg);
+    });
     // 방장이 Game start 눌렀을때 응답 ----------
     socket.on('req_game_start', (roomName:string, userId:string) =>{
       mLobby.Ack_GameStart(socket, roomName, userId);

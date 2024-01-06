@@ -26,6 +26,8 @@ export class Room {
     roomState : number;
     removedFromList : boolean;
     players : RoomPlayer [];
+    slots : number[];
+
     constructor( roomId:string, masterClientId:string, maxPlayer = 4) {
       this.roomId = roomId;                 // 룸id 또는 룸 이름
       this.masterClientId = masterClientId; // 마스터 클라이언트 id
@@ -34,6 +36,11 @@ export class Room {
       this.roomState = 0;       // 0 : 대기중 , 1 : 게임중   
       this.removedFromList = false;  //룸 리스트에서 삭제 되었는지 여부
       this.players = [];       // 룸 유저리스트 (RoomPlayer 리스트)
+      this.slots = [];         // 슬롯상태: ERoomUserSate의 0(empty)과 1(Enter)만 사용한다.
+
+      for( let i = 0 ; i < maxPlayer; i++) {
+         this.slots[i] = 0;
+      }
     }
     
     Name() : string { return this.roomId; }
@@ -43,24 +50,46 @@ export class Room {
       return this.players.length;
     }
 
-    // 생성시 마스터 플레이어 정보 셋팅
+    // 룸 생성시 마스터 플레이어 정보 셋팅
     Initialize( userInfo:UserInfo ) : void {
       const kPlayer = new RoomPlayer(true, true);
 
       kPlayer.userInfo = userInfo;
-      kPlayer.slotNo = this.players.length+1;
+      kPlayer.slotNo = 1;
       kPlayer.userState = ERoomUserSate.Enter;    // 1 = Enter_State
       
       this.players.push(kPlayer);
       this.roomState = 0;
       this.removedFromList = false;
+      this.slots[0] = ERoomUserSate.Enter;
     }
-    
-    AddPlayer( userInfo :UserInfo) {
+
+    // 비어있는 슬롯 인덱스 값
+    FindEmptySlotIndex() : number | undefined {
+      for( var i =0; i < this.slots.length; i++) {
+        if( this.slots[i] == 0) {
+          return i;
+        }
+      }
+      return undefined;   
+    }
+
+    AddPlayer( userInfo :UserInfo) : RoomPlayer {
       const kPlayer = new RoomPlayer(false, true);
       kPlayer.userInfo = userInfo;
-      kPlayer.slotNo = this.players.length+1;    // 슬롯번호는 1부터 시작한다.
       kPlayer.userState = ERoomUserSate.Enter;    // 1 = Enter_State
+      
+      let iSlot = this.FindEmptySlotIndex();
+      if( iSlot != undefined) {
+        kPlayer.slotNo = iSlot+1;    // 슬롯번호는 1부터 시작한다.
+        this.slots[iSlot] = ERoomUserSate.Enter;
+      }
+      else{
+        console.log(`[Err] 비어있는 슬롯이 없습니다.`);
+        return kPlayer;
+      }
+      console.log(`[RoomSlot] = ${this.slots},  slot idx = ${iSlot}`);
+      
       this.players.push(kPlayer);
       return kPlayer;
     }
@@ -69,7 +98,12 @@ export class Room {
     RemovePlayer(userId : string) {
       var idx = this.players.findIndex((data)=>{ return data.Name()==userId; });
       if( idx != -1){
-        this.players.splice(idx, 1);
+        // 슬롯상태를 0으로 초기화 하기  
+        let slotIdx = this.players[idx].slotNo - 1;
+        this.slots[slotIdx] = 0;
+        
+        //플레이어 삭제
+        this.players.splice(idx, 1);  // 삭제
       }
     }
     
@@ -90,6 +124,13 @@ export class Room {
     // 룸 나간 유저 브로드 캐스팅하기
     async SendLeaveRoomPlayer( socket:Socket, userId:string ) {
       await socket.broadcast.to(this.roomId).emit('notify_leave_room', {"id": userId} );
+    }
+
+    // 슬롯 0으로 초기화하기
+    ClearSlot() : void {
+      for( var i = 0; i < this.slots.length; i++) {
+        this.slots[i] = 0;
+      }
     }
   }
 

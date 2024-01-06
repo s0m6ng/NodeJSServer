@@ -68,6 +68,7 @@ export class Lobby {
         }
         //유저정보 추가
         storage.PushData(id, pass);
+        
         // 파일 저장
         storage.SaveFile();
     
@@ -152,29 +153,31 @@ export class Lobby {
             }
         }
         this.LogoutUser(socket, userId );
-        console.log('user count =', Object.keys(this.lobbyUserList).length);
+        //console.log('user count =', Object.keys(this.lobbyUserList).length);
     }
     // 가입탈퇴시 응답 -----------------------------------------
     Ack_Withdraw(socket:Socket, id:string) {
         if( storage.RemoveUserData(id) == true)
         storage.SaveFile();
+
+        this.LogoutUser(socket, id);
     }
     // 로그아웃 후 처리 ( param : 유저 id ) ----------------
     LogoutUser(socket:Socket, id:string) {
         if( id in this.lobbyUserList ) {
             delete this.lobbyUserList[id];
         }
+        console.log('user count =', Object.keys(this.lobbyUserList).length);
     }
     // 로비채팅 응답 --------------------------------------------
-    Ack_LobbyChat(socket:Socket, id:string, msg:string) {
-        console.log('채팅요청', id, msg);
+    Ack_LobbyChat(socket:Socket, userId:string, msg:string) {
+        console.log('채팅요청', userId, msg);
       
         //요청에 대한 응답 보내기
-        let packet = {id:id, msg:msg};
+        let packet = {userId:userId, msg:msg};
         socket.emit('ack_lobby_chat', packet);
       
         // chat msg를 본인을 제외한 모든유저에게 보낸다.
-        //let packet2 = {id:id, msg:msg};
         socket.broadcast.emit('notify_lobby_chat', packet );
     }
     
@@ -302,6 +305,19 @@ export class Lobby {
         console.log(userId, 'State : ', userState);
         socket.broadcast.to(roomName).emit('notify_room_ready', {"id": userId,"userState":userState} );
     }
+
+    // 룸내에서 채팅하기 응답 --------------------------------
+    Ack_RoomChat(socket:Socket, roomName:string, userId:string, msg:string) {
+        console.log('룸 채팅요청', userId, msg);
+      
+        //요청에 대한 응답 보내기
+        let packet = {userId:userId, msg:msg};
+        socket.emit('ack_room_chat', packet);
+      
+        // chat msg를 본인을 제외한 모든유저에게 보낸다.
+        socket.broadcast.to(roomName).emit('notify_room_chat', packet );
+    }
+
     // 게임 시작 ------------------------------------------
     Ack_GameStart(socket:Socket, roomName:string, userId:string) {
         const room = this.roomList[roomName];

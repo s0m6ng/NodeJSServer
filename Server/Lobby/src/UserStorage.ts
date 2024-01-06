@@ -78,6 +78,10 @@ export class UserStorage { //implements ISaveData{
     }
 
     // 파일 저장하기 --------------------------------------
+    // 주의: nodemon 을 이용하여 실행할때 파일저장을 하면 한번 죽었다가 다시 실행된다.
+    //      - 원인 : users.json이 변경되므로 재 컴파일을 해서 생기는 현상 
+    //      - 해결 : ts-node app.ts로 컴파일 하면 정상 동작한다. 
+    //              ( nodemon 사용안하거나 저장파일이 컴파일과 무관한곳에 있어야 한다. )     
     SaveFile(): void {
         const storage = { datas : this.datas };
         //storage.datas = this.datas;
